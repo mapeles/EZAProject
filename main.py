@@ -25,8 +25,8 @@ def correct_double_spaces_snippet(text: str) -> str:
     matches = list(re.finditer(r' {2,}', text))
 
     if matches:
-        print(f"⚠️ 총 {len(matches)}곳에서 연속된 공백이 발견되었습니다!")
-        print("-" * 30)
+        print(f"\n⚠️ 총 {len(matches)}곳에서 연속된 공백이 발견되었습니다!")
+        print("="*50)
 
         # 발견된 각 위치의 미리보기를 순서대로 보여줌
         for i, match in enumerate(matches):
@@ -50,7 +50,7 @@ def correct_double_spaces_snippet(text: str) -> str:
             print(f"  [원본]: {prefix}{original_snippet}{suffix}")
             print(f"  [수정]: {prefix}{modified_snippet}{suffix}\n")
         
-        print("-" * 30)
+        print("="*50)
         # 모든 미리보기를 보여준 후, 전체 수정 여부를 한 번에 물어봄
         choice = input("위에 표시된 모든 공백을 한 번에 수정하시겠습니까? (y/N(기본)): ").lower().strip()
 
@@ -64,7 +64,7 @@ def correct_double_spaces_snippet(text: str) -> str:
             return text
     else:
         # 연속된 공백이 없는 경우
-        print("✅ 연속된 공백이 없어 원본을 그대로 반환합니다.")
+        print("\n✅ 연속된 공백이 없어 원본을 그대로 반환합니다.")
         return text
 
 def check_if_processes_running():
@@ -95,39 +95,49 @@ def check_if_processes_running():
     return process_status
 
 
+# 시작 화면 초기화
+os.system('cls')
+
 # 루트 윈도우 생성 및 숨기기
 root = tk.Tk()
 root.withdraw()
 
-print("==========================================")
+print("="*50)
 print("한글-엑셀 세부특기사항 수정 도우미 v1.0")
-print("==========================================")
-print("이 프로그램은 선생님들의 세부특기사항 수정을 보다 쉽게 도와드리기 위해 제작되었습니다.")
-print("made by 성준")
-print()
-print("아래아한글과 엑셀창을 반드시 모두 종료한 뒤 이 프로그램을 사용하여 주시길 바랍니다.")
+print("="*50)
+print("\n이 프로그램은 선생님들의 세부특기사항 수정을 보다 쉽게 도와드리기 위해 제작되었습니다.")
+print("made by 성준\n")
+print("아래아한글과 엑셀창을 반드시 모두 종료한 뒤 이 프로그램을 사용하여 주시길 바랍니다.\n")
 
 checked_running = check_if_processes_running()
+warning_shown = False
+
 if checked_running['hwp']:
-    print("==========================================")
-    print("한글과 컴퓨터 프로그램이 실행중입니다.")
-    print("==========================================")
+    warning_shown = True
+    print("="*50)
+    print("⚠️ 한글과 컴퓨터 프로그램이 실행중입니다.")
+    print("="*50)
 
 if checked_running['excel']:
-    print("==========================================")
-    print("엑셀 프로그램이 실행중입니다.")
-    print("==========================================")
-print()
-print("프로그램 사용에 따른 문제나 손실은 모두 사용자에게 있으며 반드시 프로그램 사용중 다른 곳에 저장하는것을 권장드립니다.")
-print("계속하시게 된다면 이에 동의하는 것으로 간주됩니다.")
+    warning_shown = True
+    print("="*50)
+    print("⚠️ 엑셀 프로그램이 실행중입니다.")
+    print("="*50)
+
+if warning_shown:
+    print()
+
+print("프로그램 사용에 따른 문제나 손실은 모두 사용자에게 있으며")
+print("반드시 프로그램 사용중 다른 곳에 저장하는것을 권장드립니다.")
+print("계속하시게 된다면 이에 동의하는 것으로 간주됩니다.\n")
 input("계속하려면 Enter 키를 누르세요...")
+
+# 파일 선택 화면으로 전환
 os.system('cls')
-print()
-print("==========================================")
+print("="*50)
 print("수정을 원하는 엑셀 파일을 선택 해 주세요")
-print("==========================================")
-
-
+print("="*50)
+print("\n파일 선택 창이 열립니다...\n")
 
 # 파일 선택 대화상자 표시
 file_path = filedialog.askopenfilename(
@@ -135,17 +145,17 @@ file_path = filedialog.askopenfilename(
     filetypes=[("Excel 파일", "*.xlsx"), ("모든 파일", "*.*")]
 )
 
-
 if not file_path:
-    print("파일이 선택되지 않았습니다.")
+    os.system('cls')
+    print("\n파일이 선택되지 않았습니다. 프로그램을 종료합니다.\n")
+    input("Enter 키를 눌러 종료하세요...")
     exit()
-
-
-
 
 hwp = False
 
 # Excel 애플리케이션 실행 및 파일 열기
+os.system('cls')
+print("\n엑셀 파일을 여는 중입니다. 잠시만 기다려주세요...\n")
 excel = win32com.client.Dispatch("Excel.Application")
 excel.Visible = True
 workbook = excel.Workbooks.Open(file_path)
@@ -156,35 +166,48 @@ def bring_excel_to_front():
     win32gui.SetForegroundWindow(excel.hwnd)
 
 bring_excel_to_front()
+
+# 작업 메인 화면
 os.system('cls')
-print("==========================================")
-print(file_path.split("/")[-1] + " 파일이 선택되었습니다.")
-
-
+print("="*50)
+print(f"파일: {file_path.split('/')[-1]}")
+print("="*50)
+print("\n작업을 시작합니다. 수정할 셀을 선택하고 Enter 키를 누르세요.\n")
 
 while True:
-    print("==========================================")
-    print("종료하려면 '종료' 또는 'exit'를 입력하세요.")
-    print("수정을 원하는 셀을 선택한 후 이 창에서 Enter 키를 누르세요.")
-
+    print("="*50)
+    print("1. 수정할 셀을 선택한 후 Enter 키를 누르세요.")
+    print("2. 종료하려면 '종료' 또는 'exit'를 입력하세요.")
+    print("="*50)
     
     # 사용자 입력 받기
-    user_input = input("셀을 선택한 후 Enter 키를 누르거나 종료 명령을 입력하세요: ")
+    user_input = input("\n명령을 입력하세요: ")
     
     # 종료 조건 확인
     if user_input.lower() in ['종료', 'exit', 'quit', '끝']:
-        print("작업을 종료합니다.")
+        os.system('cls')
+        print("\n작업을 종료합니다. 변경사항이 저장되었습니다.\n")
         break
+    
+    # 한글 초기화
     if not hwp:
         hwp = Hwp()
+    
     try:
         # 현재 선택된 셀 정보 가져오기
         selected_cell = excel.Selection
         cell_value = selected_cell.Text
 
-        # 선택된 셀의 값 출력
-        print(f"선택한 셀 위치: {selected_cell.Address}")
-        print(f"선택한 셀의 내용: {cell_value}")
+        # 선택된 셀 정보 출력 및 작업 시작
+        os.system('cls')
+        print("="*50)
+        print(f"선택한 셀: {selected_cell.Address}")
+        print("="*50)
+        print("\n선택한 셀의 내용:")
+        print("-"*50)
+        print(f"{cell_value}")
+        print("-"*50)
+        print("\n한글 프로그램에서 맞춤법 검사를 시작합니다...\n")
 
         # 한글 새 탭 생성
         hwp.FileNewTab()
@@ -195,36 +218,61 @@ while True:
         hwp.move_pos(move_id=2)
         hwp.SpellingCheck()
 
-        input("한글에서 입력을 완료한 후 Enter 키를 누르세요: ")
+        print("\n한글에서 맞춤법 검사와 수정을 완료하신 후 Enter 키를 누르세요.")
+        input("→ 계속하려면 Enter 키를 누르세요: ")
 
         # 한글에서 수정된 텍스트 가져오기
         confirmed_text = hwp.get_page_text(pgno=0, option=4294967295)
 
-        print(f"한글에서 확인된 텍스트: {confirmed_text}")
+        # 공백 수정 안내
+        os.system('cls')
+        print("="*50)
+        print("맞춤법 검사 완료")
+        print("="*50)
+        print("\n공백 확인 중...")
+        
+        # 공백 수정 작업
         confirmed_text = correct_double_spaces_snippet(confirmed_text)
+        
         # 엑셀로 텍스트 다시 입력
         excel.Range(selected_cell.Address).Value = confirmed_text
         hwp.clear(option=1)
         hwp.minimize_window()
 
         bring_excel_to_front()
-        print("텍스트가 성공적으로 엑셀에 업데이트되었습니다.")
-
-        # 한글 문서 정리
-
+        
+        os.system('cls')
+        print("="*50)
+        print("작업 완료")
+        print("="*50)
+        print("\n✅ 텍스트가 성공적으로 엑셀에 업데이트되었습니다.\n")
+        print("다음 셀을 선택하거나 종료 명령을 입력하세요.\n")
         
     except Exception as e:
-        print(f"오류가 발생했습니다: {e}")
-        print("다시 시도해주세요.")
+        os.system('cls')
+        print("="*50)
+        print("오류 발생")
+        print("="*50)
+        print(f"\n❌ 오류가 발생했습니다: {e}\n")
+        print("다시 시도해주세요.\n")
+        
         # 오류 발생시에도 한글 문서 정리
         try:
             hwp.clear(option=1)
         except:
             pass
 
-print("\n모든 작업이 완료되었습니다.")
+# 프로그램 종료 및 정리
+os.system('cls')
+print("="*50)
+print("프로그램 종료")
+print("="*50)
+print("\n모든 작업이 완료되었습니다. 감사합니다.\n")
+
 # 정리
 try:
     hwp.clear(option=1)
 except:
     pass
+
+input("Enter 키를 눌러 창을 닫으세요...")
