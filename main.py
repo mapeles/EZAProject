@@ -9,6 +9,9 @@ import pyautogui
 import psutil
 import os
 import re
+import shutil
+
+
 
 def correct_double_spaces_snippet(text: str) -> str:
     """
@@ -95,6 +98,71 @@ def check_if_processes_running():
     return process_status
 
 
+def create_backup_folder():
+    """프로그램 실행 위치에 백업 폴더 생성"""
+    # 현재 스크립트 실행 경로 (컴파일 시 프로그램 위치)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    backup_dir = os.path.join(current_dir, "backup")
+    
+    # 백업 폴더가 없으면 생성
+    if not os.path.exists(backup_dir):
+        os.makedirs(backup_dir)
+        print(f"✅ 백업 폴더 생성: {backup_dir}")
+    
+    return backup_dir
+
+
+def backup_excel_file(file_path):
+    """엑셀 파일을 백업 폴더에 시간 접두사를 붙여 저장"""
+    try:
+        # 백업 폴더 확인/생성
+        backup_dir = create_backup_folder()
+        
+        # 원본 파일 이름 추출
+        file_name = os.path.basename(file_path)
+        
+        # 시간 접두사 생성 (년월일_시분초)
+        time_prefix = time.strftime("%Y%m%d_%H%M%S")
+        
+        # 새 백업 파일 경로
+        backup_file_path = os.path.join(backup_dir, f"{time_prefix}_{file_name}")
+        
+        # 파일 복사
+        shutil.copy2(file_path, backup_file_path)
+        
+        print(f"✅ 엑셀 파일 백업 완료: {os.path.basename(backup_file_path)}")
+        return backup_file_path
+    except Exception as e:
+        print(f"⚠️ 엑셀 파일 백업 중 오류: {e}")
+        return None
+
+
+def backup_hwp_text(text, cell_address):
+    """한글에서 편집 중인 텍스트를 txt 파일로 백업"""
+    try:
+        # 백업 폴더 확인/생성
+        backup_dir = create_backup_folder()
+        
+        # 시간 접두사 생성
+        time_prefix = time.strftime("%Y%m%d_%H%M%S")
+        
+        # 셀 주소에서 특수문자 제거 (파일명에 사용할 수 없는 문자 처리)
+        safe_cell_address = cell_address.replace("$", "").replace(":", "_")
+        
+        # 백업 파일 경로 (셀 주소 포함)
+        backup_file_path = os.path.join(backup_dir, f"{time_prefix}_cell_{safe_cell_address}.txt")
+        
+        # 텍스트 저장
+        with open(backup_file_path, 'w', encoding='utf-8') as f:
+            f.write(text)
+        
+        print(f"✅ 한글 텍스트 백업 완료: {os.path.basename(backup_file_path)}")
+        return backup_file_path
+    except Exception as e:
+        print(f"⚠️ 한글 텍스트 백업 중 오류: {e}")
+        return None
+
+
 # 시작 화면 초기화
 os.system('cls')
 
@@ -155,7 +223,16 @@ hwp = False
 
 # Excel 애플리케이션 실행 및 파일 열기
 os.system('cls')
-print("\n엑셀 파일을 여는 중입니다. 잠시만 기다려주세요...\n")
+print("="*50)
+print("엑셀 파일 준비 중")
+print("="*50)
+print("\n엑셀 파일을 여는 중입니다. 잠시만 기다려주세요...")
+
+# 원본 파일 백업
+print("원본 파일을 백업하는 중입니다...")
+backup_excel_file(file_path)
+
+print("엑셀 프로그램을 시작합니다...\n")
 excel = win32com.client.Dispatch("Excel.Application")
 excel.Visible = True
 workbook = excel.Workbooks.Open(file_path)
@@ -224,6 +301,9 @@ while True:
         # 한글에서 수정된 텍스트 가져오기
         confirmed_text = hwp.get_page_text(pgno=0, option=4294967295)
 
+        # 한글 텍스트 백업 (한글 창을 닫기 전에)
+        backup_hwp_text(confirmed_text, selected_cell.Address)
+
         # 공백 수정 안내
         os.system('cls')
         print("="*50)
@@ -236,6 +316,12 @@ while True:
         
         # 엑셀로 텍스트 다시 입력
         excel.Range(selected_cell.Address).Value = confirmed_text
+        
+        # 엑셀 파일 저장 및 백업
+        workbook.Save()
+        print("엑셀 파일을 저장하고 백업하는 중...")
+        backup_excel_file(file_path)
+        
         hwp.clear(option=1)
         hwp.minimize_window()
 
